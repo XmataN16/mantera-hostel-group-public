@@ -1,0 +1,98 @@
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-overlay">
+    <h1>Добро пожаловать в Mantera Hotels</h1>
+    <p>Сеть отелей на побережье Чёрного моря — комфорт, сервис, незабываемый отдых</p>
+  </div>
+</section>
+
+<!-- ПОИСК -->
+<section class="search-section">
+  <div class="search-card">
+    <h2>Найти номер</h2>
+    <form class="search-form" (ngSubmit)="onSearch()">
+      <div class="field">
+        <label>Отель</label>
+        <p-dropdown
+          [options]="hotels()"
+          [(ngModel)]="searchHotelId"
+          name="hotel"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Выберите отель"
+          styleClass="w-full">
+        </p-dropdown>
+      </div>
+      <div class="field">
+        <label>Заезд</label>
+        <input
+          type="date"
+          pInputText
+          [(ngModel)]="checkIn"
+          name="checkIn"
+          class="w-full" />
+      </div>
+      <div class="field">
+        <label>Выезд</label>
+        <input
+          type="date"
+          pInputText
+          [(ngModel)]="checkOut"
+          name="checkOut"
+          class="w-full" />
+      </div>
+      <div class="field field-small">
+        <label>Взрослые</label>
+        <p-inputNumber
+          [(ngModel)]="adults"
+          name="adults"
+          [min]="1"
+          [max]="10"
+          [showButtons]="true"
+          styleClass="w-full">
+        </p-inputNumber>
+      </div>
+      <div class="field field-small">
+        <label>Дети</label>
+        <p-inputNumber
+          [(ngModel)]="children"
+          name="children"
+          [min]="0"
+          [max]="10"
+          [showButtons]="true"
+          styleClass="w-full">
+        </p-inputNumber>
+      </div>
+      <div class="field field-btn">
+        <button
+          pButton
+          type="submit"
+          label="Найти номера"
+          icon="pi pi-search"
+          size="large"
+          styleClass="w-full">
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ОТЕЛИ -->
+<section class="hotels-section">
+  <h2>Наши отели</h2>
+  <div class="hotels-grid">
+    @for (hotel of hotels(); track hotel.id) {
+      <a [routerLink]="['/hotel', hotel.id]" class="hotel-card">
+        <div class="hotel-card-image">
+          <span class="hotel-emoji">🏨</span>
+        </div>
+        <div class="hotel-card-body">
+          <h3>{{ hotel.name }}</h3>
+          <p class="hotel-address">📍 {{ hotel.address }}</p>
+          <p class="hotel-phone">📞 {{ hotel.phone }}</p>
+          <span class="hotel-link">Подробнее →</span>
+        </div>
+      </a>
+    }
+  </div>
+</section>

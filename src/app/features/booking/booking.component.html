@@ -1,0 +1,121 @@
+<section class="booking-page">
+  <h1>Оформление бронирования</h1>
+
+  <div class="booking-layout">
+    <!-- Левая колонка: сводка -->
+    <div class="booking-summary">
+      <h2>Ваш заказ</h2>
+      <div class="summary-row">
+        <span>Номер</span>
+        <strong>№ {{ roomNumber }} — {{ roomTypeName }}</strong>
+      </div>
+      <div class="summary-row">
+        <span>Заезд</span>
+        <strong>{{ checkIn }}</strong>
+      </div>
+      <div class="summary-row">
+        <span>Выезд</span>
+        <strong>{{ checkOut }}</strong>
+      </div>
+      <div class="summary-row">
+        <span>Ночей</span>
+        <strong>{{ nights }}</strong>
+      </div>
+      <div class="summary-row">
+        <span>Гости</span>
+        <strong>{{ adults }} взр.{{ children > 0 ? ', ' + children + ' дет.' : '' }}</strong>
+      </div>
+      <div class="summary-row">
+        <span>Цена за ночь</span>
+        <strong>{{ formatPrice(pricePerNight) }}</strong>
+      </div>
+      <div class="summary-total">
+        <span>Итого к оплате</span>
+        <strong>{{ formatPrice(totalPrice) }}</strong>
+      </div>
+    </div>
+
+    <!-- Правая колонка: форма гостя -->
+    <div class="booking-form-card">
+      <h2>Данные гостя</h2>
+
+      @if (errorMessage()) {
+        <div class="error-box">{{ errorMessage() }}</div>
+      }
+
+      <form class="guest-form" (ngSubmit)="submit()">
+        <div class="form-row">
+          <div class="field">
+            <label>Фамилия *</label>
+            <input pInputText [(ngModel)]="guest.lastName" name="lastName" placeholder="Иванов" class="w-full" />
+          </div>
+          <div class="field">
+            <label>Имя *</label>
+            <input pInputText [(ngModel)]="guest.firstName" name="firstName" placeholder="Иван" class="w-full" />
+          </div>
+          <div class="field">
+            <label>Отчество</label>
+            <input pInputText [(ngModel)]="guest.middleName" name="middleName" placeholder="Иванович" class="w-full" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label>Дата рождения *</label>
+            <input type="date" pInputText [(ngModel)]="guest.birthDate" name="birthDate" class="w-full" />
+          </div>
+          <div class="field">
+            <label>Пол</label>
+            <p-dropdown
+              [options]="genderOptions"
+              [(ngModel)]="guest.gender"
+              name="gender"
+              optionLabel="label"
+              optionValue="value"
+              styleClass="w-full" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label>Телефон *</label>
+            <input pInputText [(ngModel)]="guest.phone" name="phone" placeholder="+7 900 000-00-00" class="w-full" />
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" pInputText [(ngModel)]="guest.email" name="email" placeholder="email@example.ru" class="w-full" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label>Тип документа</label>
+            <p-dropdown
+              [options]="[{label:'Паспорт РФ', value:'PASSPORT'}, {label:'Загранпаспорт', value:'FOREIGN_PASSPORT'}]"
+              [(ngModel)]="guest.documentType"
+              name="docType"
+              optionLabel="label"
+              optionValue="value"
+              styleClass="w-full" />
+          </div>
+          <div class="field">
+            <label>Номер документа *</label>
+            <input pInputText [(ngModel)]="guest.documentNumber" name="docNumber" placeholder="4500 123456" class="w-full" />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button
+            pButton
+            type="submit"
+            label="Подтвердить бронирование"
+            icon="pi pi-check"
+            [loading]="isSubmitting()"
+            size="large"
+            styleClass="w-full">
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>

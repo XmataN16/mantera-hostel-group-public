@@ -1,0 +1,27 @@
+<section class="confirmation-page">
+  <div class="confirmation-card">
+    <div class="success-icon">✅</div>
+    <h1>Бронирование подтверждено!</h1>
+    <p class="subtitle">Спасибо за выбор Mantera Hotels</p>
+
+    <div class="details">
+      <div class="detail-row">
+        <span>Номер бронирования</span>
+        <strong>{{ reservationNumber() || '—' }}</strong>
+      </div>
+      <div class="detail-row">
+        <span>ID бронирования</span>
+        <strong>#{{ reservationId() }}</strong>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <p>📧 Подтверждение отправлено на ваш email.</p>
+      <p>📞 По вопросам обращайтесь: +7 (861) 200-00-01</p>
+    </div>
+
+    <div class="actions">
+      <a routerLink="/" pButton label="На главную" icon="pi pi-home" severity="secondary"></a>
+    </div>
+  </div>
+</section>

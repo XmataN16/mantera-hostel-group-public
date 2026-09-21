@@ -1,1 +1,28 @@
 /* You can add global styles to this file, and also import other style files */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  background-color: #f5f7fa;
+  color: #263238;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: #1565c0;
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
+}
+
+.w-full { width: 100%; }
+
+// PrimeNG overrides
+.p-dropdown { width: 100%; }
+.p-inputnumber { width: 100%; }
+.p-inputtext { width: 100%; }

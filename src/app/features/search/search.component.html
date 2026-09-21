@@ -1,0 +1,86 @@
+<section class="search-page">
+  <h1>Поиск доступных номеров</h1>
+
+  <!-- Фильтры -->
+  <div class="filters-card">
+    <form class="filters-form" (ngSubmit)="search()">
+      <div class="field">
+        <label>Отель</label>
+        <p-dropdown
+          [options]="hotels()"
+          [(ngModel)]="hotelId"
+          name="hotel"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Выберите"
+          styleClass="w-full" />
+      </div>
+      <div class="field">
+        <label>Заезд</label>
+        <input type="date" pInputText [(ngModel)]="checkIn" name="checkIn" class="w-full" />
+      </div>
+      <div class="field">
+        <label>Выезд</label>
+        <input type="date" pInputText [(ngModel)]="checkOut" name="checkOut" class="w-full" />
+      </div>
+      <div class="field field-sm">
+        <label>Взр.</label>
+        <p-inputNumber [(ngModel)]="adults" name="adults" [min]="1" [showButtons]="true" styleClass="w-full" />
+      </div>
+      <div class="field field-sm">
+        <label>Дети</label>
+        <p-inputNumber [(ngModel)]="children" name="children" [min]="0" [showButtons]="true" styleClass="w-full" />
+      </div>
+      <div class="field field-btn">
+        <button pButton type="submit" label="Найти" icon="pi pi-search"></button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Результаты -->
+  @if (isLoading()) {
+    <div class="status-msg">Ищем свободные номера...</div>
+  } @else if (hasSearched()) {
+    <div class="results-header">
+      <span>Найдено: <strong>{{ rooms().length }}</strong> номеров</span>
+      @if (getNights() > 0) {
+        <span class="nights">{{ getNights() }} ноч.</span>
+      }
+    </div>
+
+    @if (rooms().length === 0) {
+      <div class="empty">К сожалению, свободных номеров на выбранные даты нет.</div>
+    } @else {
+      <div class="rooms-list">
+        @for (room of rooms(); track room.roomId) {
+          <div class="room-card">
+            <div class="room-info">
+              <h3>№ {{ room.roomNumber }} — {{ room.roomTypeName }}</h3>
+              <div class="room-meta">
+                <span>👥 до {{ room.capacity }} чел.</span>
+                <span>🏢 этаж {{ room.floor }}</span>
+                <p-tag
+                  [value]="room.housekeepingStatus === 'CLEAN' ? 'Чистый' : room.housekeepingStatus"
+                  [severity]="room.housekeepingStatus === 'CLEAN' ? 'success' : 'warning'"
+                />
+              </div>
+            </div>
+            <div class="room-price-block">
+              <div class="price">{{ formatPrice(room.basePrice) }}</div>
+              <div class="per-night">за ночь</div>
+              @if (getNights() > 0) {
+                <div class="total">Итого: {{ formatPrice(room.basePrice * getNights()) }}</div>
+              }
+              <button
+                pButton
+                label="Забронировать"
+                icon="pi pi-check"
+                (click)="bookRoom(room)">
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</section>

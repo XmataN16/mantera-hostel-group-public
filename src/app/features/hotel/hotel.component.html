@@ -1,0 +1,44 @@
+@if (isLoading()) {
+  <div class="loading">Загрузка...</div>
+} @else if (hotel(); as h) {
+  <section class="hotel-hero">
+    <h1>{{ h.name }}</h1>
+    <p class="address">📍 {{ h.address }}</p>
+    <p class="contacts">📞 {{ h.phone }} &nbsp; ✉️ {{ h.email }}</p>
+  </section>
+
+  <section class="room-types-section">
+    <h2>Категории номеров</h2>
+    @if (roomTypes().length === 0) {
+      <p class="empty">Категории номеров пока не добавлены.</p>
+    } @else {
+      <div class="room-types-grid">
+        @for (rt of roomTypes(); track rt.id) {
+          <div class="room-type-card">
+            <div class="rt-header">
+              <span class="rt-code">{{ rt.code }}</span>
+              <p-tag
+                [value]="rt.status === 'ACTIVE' ? 'Доступна' : 'Недоступна'"
+                [severity]="rt.status === 'ACTIVE' ? 'success' : 'danger'"
+              />
+            </div>
+            <h3>{{ rt.name }}</h3>
+            <p class="rt-desc">{{ rt.description || 'Описание отсутствует' }}</p>
+            <div class="rt-details">
+              <span>👥 до {{ rt.capacity }} чел.</span>
+              <span class="rt-price">от {{ formatPrice(rt.basePrice) }} / ночь</span>
+            </div>
+            <a
+              [routerLink]="['/search']"
+              [queryParams]="{ hotelId: h.id }"
+              class="rt-book-link">
+              Забронировать →
+            </a>
+          </div>
+        }
+      </div>
+    }
+  </section>
+} @else {
+  <div class="not-found">Отель не найден</div>
+}
