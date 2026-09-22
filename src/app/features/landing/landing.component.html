@@ -30,14 +30,14 @@
         </h1>
         <p class="description">Комфорт, сервис и незабываемый отдых ждут вас</p>
         <div class="action-buttons">
-          <!-- Показываем кнопки входа/регистрации если пользователь НЕ авторизованный гость -->
+          <!-- Неавторизованный гость: кнопки "Войти" и "Регистрация" -->
           <ng-container *ngIf="!authService.isAuthorizedGuest(); else loggedInTemplate">
             <button pButton label="Войти" icon="pi pi-sign-in" class="p-button-rounded p-button-lg" (click)="openLoginModal()"></button>
             <button pButton label="Регистрация" icon="pi pi-user-plus" class="p-button-rounded p-button-lg" (click)="openRegisterModal()"></button>
           </ng-container>
-          <!-- Шаблон только для авторизованного гостя (вошёл по документу) -->
+          <!-- Авторизованный гость: одна серая кнопка "Перейти в личный кабинет" -->
           <ng-template #loggedInTemplate>
-            <button pButton label="Перейти в личный кабинет" icon="pi pi-user" class="p-button-rounded p-button-lg" (click)="router.navigate(['/profile'])"></button>
+            <button pButton label="Перейти в личный кабинет" icon="pi pi-user" class="p-button-rounded p-button-lg" severity="secondary" (click)="router.navigate(['/profile'])"></button>
           </ng-template>
         </div>
       </div>

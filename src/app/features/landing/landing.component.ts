@@ -133,7 +133,6 @@ export class LandingComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.apiService.getGuestByDocument(normalizedDoc).subscribe({
       next: (guest: any) => {
-        // Сохраняем полные данные гостя
         this.authService.loginAsGuestById(
           guest.id.toString(),
           `${guest.firstName} ${guest.lastName}`,
@@ -179,7 +178,6 @@ export class LandingComponent implements OnInit, OnDestroy {
     };
     this.apiService.createGuest(guestData).subscribe({
       next: (createdGuest: any) => {
-        // Сохраняем полные данные гостя
         this.authService.loginAsGuestById(
           createdGuest.id.toString(),
           `${createdGuest.firstName} ${createdGuest.lastName}`,

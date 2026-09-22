@@ -30,15 +30,15 @@ export class AuthService {
   private username = signal<string | null>(getStorageItem('username'));
   private roles = signal<string[]>(JSON.parse(getStorageItem('roles') || '[]'));
   private isGuest = signal<boolean>(getStorageItem('is_guest') === 'true');
+  // ДОБАВЛЕНО: сигнал для ID авторизованного гостя
+  private authorizedGuestId = signal<string | null>(getStorageItem('client_guest_id'));
 
   // isAuthenticated — для guard (пропускает всех кто "вошёл" любым способом)
   isAuthenticated = computed(() => !!this.token() || this.isGuest());
-
-  // isAuthorizedGuest — только если реально вошёл по документу/зарегистрировался (есть client_guest_id)
-  isAuthorizedGuest = computed(() => !!getStorageItem('client_guest_id'));
-
+  // isAuthorizedGuest — только если реально вошёл по документу/зарегистрировался
+  isAuthorizedGuest = computed(() => !!this.authorizedGuestId());
   // isAnonymousGuest — только "продолжил как гость" без реального входа
-  isAnonymousGuest = computed(() => this.isGuest() && !getStorageItem('client_guest_id'));
+  isAnonymousGuest = computed(() => this.isGuest() && !this.authorizedGuestId());
 
   currentUser = computed(() => this.username());
   userRoles = computed(() => this.roles());
@@ -60,6 +60,7 @@ export class AuthService {
         this.username.set(response.username);
         this.roles.set(response.roles);
         this.isGuest.set(false);
+        this.authorizedGuestId.set(null);
       })
     );
   }
@@ -78,6 +79,8 @@ export class AuthService {
     this.username.set(guestName);
     this.roles.set([]);
     this.isGuest.set(true);
+    // ВАЖНО: обновляем сигнал
+    this.authorizedGuestId.set(guestId);
   }
 
   loginAsGuest(): void {
@@ -92,6 +95,8 @@ export class AuthService {
     this.username.set('Гость');
     this.roles.set([]);
     this.isGuest.set(true);
+    // ВАЖНО: сбрасываем сигнал
+    this.authorizedGuestId.set(null);
   }
 
   logout(): void {
@@ -106,6 +111,8 @@ export class AuthService {
     this.username.set(null);
     this.roles.set([]);
     this.isGuest.set(false);
+    // ВАЖНО: сбрасываем сигнал — это триггерит пересчёт computed
+    this.authorizedGuestId.set(null);
   }
 
   getCurrentUser(): Observable<CurrentUserResponse> {
@@ -125,7 +132,7 @@ export class AuthService {
   }
 
   getGuestId(): string | null {
-    return getStorageItem('client_guest_id');
+    return this.authorizedGuestId();
   }
 
   getGuestName(): string {
@@ -143,7 +150,6 @@ export class AuthService {
 
   updateGuestData(data: any): void {
     this.setGuestData(data);
-    // Обновляем имя в хранилище
     if (data.firstName && data.lastName) {
       setStorageItem('client_guest_name', `${data.firstName} ${data.lastName}`);
       this.username.set(`${data.firstName} ${data.lastName}`);
