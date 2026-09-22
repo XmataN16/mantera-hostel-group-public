@@ -45,6 +45,8 @@ export class AuthService {
         setStorageItem('username', response.username);
         setStorageItem('roles', JSON.stringify(response.roles));
         removeStorageItem('is_guest');
+        removeStorageItem('client_guest_id');
+        removeStorageItem('client_guest_name');
         this.token.set(response.accessToken);
         this.username.set(response.username);
         this.roles.set(response.roles);
@@ -53,11 +55,27 @@ export class AuthService {
     );
   }
 
-  loginAsGuest(): void {
+  // НОВЫЙ МЕТОД: вход гостя по номеру документа (после успешного запроса к /guests/by-document)
+  loginAsGuestById(guestId: string, guestName: string): void {
     setStorageItem('is_guest', 'true');
+    setStorageItem('client_guest_id', guestId);
+    setStorageItem('client_guest_name', guestName);
     removeStorageItem('access_token');
     removeStorageItem('username');
     removeStorageItem('roles');
+    this.token.set(null);
+    this.username.set(guestName);
+    this.roles.set([]);
+    this.isGuest.set(true);
+  }
+
+  loginAsGuest(): void {
+    setStorageItem('is_guest', 'true');
+    setStorageItem('client_guest_name', 'Гость');
+    removeStorageItem('access_token');
+    removeStorageItem('username');
+    removeStorageItem('roles');
+    removeStorageItem('client_guest_id');
     this.token.set(null);
     this.username.set('Гость');
     this.roles.set([]);
@@ -69,6 +87,8 @@ export class AuthService {
     removeStorageItem('username');
     removeStorageItem('roles');
     removeStorageItem('is_guest');
+    removeStorageItem('client_guest_id');
+    removeStorageItem('client_guest_name');
     this.token.set(null);
     this.username.set(null);
     this.roles.set([]);
@@ -89,5 +109,14 @@ export class AuthService {
 
   isGuestUser(): boolean {
     return this.isGuest();
+  }
+
+  // Вспомогательный метод для получения ID гостя
+  getGuestId(): string | null {
+    return getStorageItem('client_guest_id');
+  }
+
+  getGuestName(): string {
+    return getStorageItem('client_guest_name') || 'Гость';
   }
 }

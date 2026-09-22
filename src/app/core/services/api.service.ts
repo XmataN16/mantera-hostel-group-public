@@ -55,4 +55,8 @@ export class ApiService {
   getGuestHistory(guestId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/guests/${guestId}/history`);
   }
+
+  getGuestByDocument(documentNumber: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/guests/by-document/${documentNumber}`);
+  }
 }

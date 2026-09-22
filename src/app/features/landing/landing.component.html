@@ -29,33 +29,38 @@
           <span class="title-subtitle">Сеть отелей на побережье Чёрного моря</span>
         </h1>
         <p class="description">Комфорт, сервис и незабываемый отдых ждут вас</p>
+        
         <div class="action-buttons">
-          <button pButton label="Войти" icon="pi pi-sign-in" class="p-button-rounded p-button-lg" (click)="openLoginModal()"></button>
-          <button pButton label="Регистрация" icon="pi pi-user-plus" class="p-button-rounded p-button-lg p-button-outlined" (click)="openRegisterModal()"></button>
-          <button pButton label="Продолжить как гость" icon="pi pi-arrow-right" class="p-button-rounded p-button-lg p-button-text" (click)="continueAsGuest()"></button>
+          <!-- Показываем кнопки входа/регистрации ТОЛЬКО если пользователь НЕ авторизован -->
+          <ng-container *ngIf="!authService.isAuthenticated(); else loggedInTemplate">
+            <button pButton label="Войти" icon="pi pi-sign-in" class="p-button-rounded p-button-lg" (click)="openLoginModal()"></button>
+            <button pButton label="Регистрация" icon="pi pi-user-plus" class="p-button-rounded p-button-lg p-button-outlined" (click)="openRegisterModal()"></button>
+            <button pButton label="Продолжить как гость" icon="pi pi-arrow-right" class="p-button-rounded p-button-lg p-button-text" (click)="continueAsGuest()"></button>
+          </ng-container>
+          
+          <!-- Шаблон для уже авторизованного пользователя -->
+          <ng-template #loggedInTemplate>
+            <button pButton label="Перейти в личный кабинет" icon="pi pi-user" class="p-button-rounded p-button-lg" (click)="router.navigate(['/profile'])"></button>
+          </ng-template>
         </div>
       </div>
     </div>
   </div>
 
-  <p-dialog [(visible)]="displayAuthModal" [modal]="true" [style]="{ width: '500px' }" [closable]="true" [closeOnEscape]="true" header="">
+  <p-dialog [(visible)]="displayAuthModal" [modal]="true" [style]="{ width: '450px' }" [closable]="true" [closeOnEscape]="true" header="">
     <ng-template pTemplate="header">
       <div class="modal-header">
-        <h3>{{ isLoginMode ? 'Вход в систему' : 'Регистрация' }}</h3>
+        <h3>{{ isLoginMode ? 'Вход для гостей' : 'Регистрация гостя' }}</h3>
       </div>
     </ng-template>
     <div class="auth-modal-content">
       <p-messages *ngIf="showGuestWarning" [value]="[{severity:'info', summary:'Гостевой доступ', detail:'Вы войдете как гость. Некоторые функции будут ограничены.'}]"></p-messages>
       
-      <!-- Форма входа -->
+      <!-- Форма входа (ТОЛЬКО НОМЕР ДОКУМЕНТА) -->
       <form *ngIf="isLoginMode" (ngSubmit)="onLogin()" class="auth-form">
         <div class="field">
-          <label for="username">Логин</label>
-          <input id="username" type="text" pInputText [(ngModel)]="loginForm.username" name="username" placeholder="Введите логин" class="w-full">
-        </div>
-        <div class="field">
-          <label for="password">Пароль</label>
-          <p-password id="password" [(ngModel)]="loginForm.password" name="password" placeholder="Введите пароль" [toggleMask]="true" [feedback]="false" class="w-full"></p-password>
+          <label for="docNumber">Номер документа (Паспорт)</label>
+          <input id="docNumber" type="text" pInputText [(ngModel)]="loginDocumentNumber" name="loginDocumentNumber" placeholder="Например: 4500 123456" class="w-full" required>
         </div>
         <div class="form-footer">
           <a class="forgot-password" (click)="isLoginMode = false">Нет аккаунта? Зарегистрироваться</a>
@@ -63,7 +68,7 @@
         <button pButton type="submit" label="Войти" icon="pi pi-sign-in" [loading]="isLoading" class="w-full"></button>
       </form>
 
-      <!-- Форма регистрации (ИСПРАВЛЕНА: добавлено поле birthDate) -->
+      <!-- Форма регистрации -->
       <form *ngIf="!isLoginMode" (ngSubmit)="onRegister()" class="auth-form">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
           <div class="field">
@@ -76,7 +81,6 @@
           </div>
         </div>
         
-        <!-- ДОБАВЛЕНО ПОЛЕ ДАТЫ РОЖДЕНИЯ -->
         <div class="field">
           <label>Дата рождения *</label>
           <input type="date" pInputText [(ngModel)]="registerForm.birthDate" name="birthDate" class="w-full" required>
@@ -86,6 +90,7 @@
           <label>Номер документа (Паспорт) *</label>
           <input type="text" pInputText [(ngModel)]="registerForm.documentNumber" name="documentNumber" class="w-full" required>
         </div>
+        
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
           <div class="field">
             <label>Телефон</label>
@@ -96,14 +101,7 @@
             <input type="email" pInputText [(ngModel)]="registerForm.email" name="email" class="w-full">
           </div>
         </div>
-        <div class="field">
-          <label>Пароль *</label>
-          <p-password [(ngModel)]="registerForm.password" name="password" [toggleMask]="true" [feedback]="false" styleClass="w-full"></p-password>
-        </div>
-        <div class="field">
-          <label>Подтвердите пароль *</label>
-          <p-password [(ngModel)]="registerForm.confirmPassword" name="confirmPassword" [toggleMask]="true" [feedback]="false" styleClass="w-full"></p-password>
-        </div>
+
         <div class="form-footer">
           <a class="back-to-login" (click)="isLoginMode = true">Уже есть аккаунт? Войти</a>
         </div>

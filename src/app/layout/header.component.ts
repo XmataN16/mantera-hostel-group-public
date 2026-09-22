@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit, PLATFORM_ID } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
+import { AuthService } from '../core/services/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -15,15 +16,17 @@ import { ButtonModule } from 'primeng/button';
           <span class="logo-text">Mantera Hotels</span>
         </a>
         <nav class="main-nav">
-          <!-- ИСПРАВЛЕНО: ссылка теперь ведёт на /home -->
-          <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Главная</a>
+          <!-- УМНАЯ ССЫЛКА: если авторизован — /home, иначе — / (лендинг) -->
+          <a [routerLink]="authService.isAuthenticated() ? '/home' : '/'" 
+             routerLinkActive="active" 
+             [routerLinkActiveOptions]="{exact: true}">Главная</a>
           <a routerLink="/search" routerLinkActive="active">Найти номер</a>
-          @if (isLoggedIn()) {
+          @if (authService.isAuthenticated()) {
             <a routerLink="/profile" routerLinkActive="active">Личный кабинет</a>
           }
         </nav>
         <div class="header-contacts">
-          @if (isLoggedIn()) {
+          @if (authService.isAuthenticated()) {
             <button pButton label="Выйти" icon="pi pi-sign-out" size="small" severity="secondary" (click)="logout()"></button>
           } @else {
             <span class="phone">+7 (861) 200-00-01</span>
@@ -94,26 +97,14 @@ import { ButtonModule } from 'primeng/button';
 export class HeaderComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private router = inject(Router);
-  
-  isLoggedIn = signal(false);
+  public authService = inject(AuthService);
 
   ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      const isGuest = !!localStorage.getItem('client_guest_id');
-      const isAuth = !!localStorage.getItem('access_token');
-      this.isLoggedIn.set(isGuest || isAuth);
-    }
+    // Сигналы AuthService уже инициализированы из localStorage
   }
 
   logout(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('client_guest_id');
-      localStorage.removeItem('client_guest_name');
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('username');
-      localStorage.removeItem('roles');
-    }
-    this.isLoggedIn.set(false);
+    this.authService.logout();
     this.router.navigate(['/']);
   }
 }

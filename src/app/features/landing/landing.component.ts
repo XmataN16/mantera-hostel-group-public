@@ -3,7 +3,6 @@ import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
-import { LoginRequest } from '../../shared/models/auth.model';
 import { GuestBookingInfo } from '../../shared/models/booking.model';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -38,16 +37,17 @@ interface ParallaxLayer {
 export class LandingComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private isBrowser = isPlatformBrowser(this.platformId);
+  public authService = inject(AuthService);
+  private apiService = inject(ApiService);
+  public router = inject(Router);
+  private messageService = inject(MessageService);
 
   layers: ParallaxLayer[] = [];
   private mouseMoveListener: (e: MouseEvent) => void;
-
   displayAuthModal = false;
   isLoginMode = true;
   isLoading = false;
-
-  loginForm: LoginRequest = { username: '', password: '' };
-
+  loginDocumentNumber = '';
   registerForm = {
     lastName: '',
     firstName: '',
@@ -62,17 +62,10 @@ export class LandingComponent implements OnInit, OnDestroy {
     password: '',
     confirmPassword: ''
   };
-
   showGuestWarning = false;
 
-  constructor(
-    private router: Router,
-    private authService: AuthService,
-    private apiService: ApiService,
-    private messageService: MessageService
-  ) {
+  constructor() {
     this.mouseMoveListener = this.handleMouseMove.bind(this);
-
     if (this.isBrowser) {
       afterNextRender(() => {
         this.initParallaxLayers();
@@ -115,6 +108,7 @@ export class LandingComponent implements OnInit, OnDestroy {
     this.isLoginMode = true;
     this.displayAuthModal = true;
     this.showGuestWarning = false;
+    this.loginDocumentNumber = '';
   }
 
   openRegisterModal(): void {
@@ -128,88 +122,100 @@ export class LandingComponent implements OnInit, OnDestroy {
     this.resetForms();
   }
 
+  // Нормализация номера документа: убираем пробелы, дефисы, приводим к верхнему регистру
+  private normalizeDocumentNumber(doc: string): string {
+    return doc.replace(/[\s\-]/g, '').toUpperCase();
+  }
+
   onLogin(): void {
-    if (!this.loginForm.username || !this.loginForm.password) {
-      this.messageService.add({ severity: 'warn', summary: 'Ошибка', detail: 'Введите логин и пароль' });
+    const normalizedDoc = this.normalizeDocumentNumber(this.loginDocumentNumber);
+    if (!normalizedDoc) {
+      this.messageService.add({ severity: 'warn', summary: 'Ошибка', detail: 'Введите номер документа' });
       return;
     }
     this.isLoading = true;
-    this.authService.login(this.loginForm).subscribe({
-      next: () => {
+    this.apiService.getGuestByDocument(normalizedDoc).subscribe({
+      next: (guest: any) => {
+        // ВАЖНО: используем authService.loginAsGuestById — это установит is_guest=true
+        this.authService.loginAsGuestById(guest.id.toString(), `${guest.firstName} ${guest.lastName}`);
         this.isLoading = false;
         this.closeAuthModal();
-        this.router.navigate(['/home']);
+        this.messageService.add({ severity: 'success', summary: 'Успех', detail: 'Добро пожаловать!' });
+        this.router.navigate(['/profile']);
       },
-      error: () => {
+      error: (err) => {
         this.isLoading = false;
-        this.messageService.add({ severity: 'error', summary: 'Ошибка авторизации', detail: 'Неверный логин или пароль' });
+        if (err.status === 404) {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Гость не найден',
+            detail: 'Пользователь с таким номером документа не найден. Пожалуйста, зарегистрируйтесь.'
+          });
+        } else {
+          this.messageService.add({ severity: 'error', summary: 'Ошибка', detail: 'Ошибка сервера при входе' });
+        }
       }
     });
   }
 
-  // src/app/features/landing/landing.component.ts
-
-onRegister(): void {
-  // Добавлена проверка на пустую дату рождения
-  if (!this.registerForm.lastName || !this.registerForm.firstName || !this.registerForm.documentNumber || !this.registerForm.birthDate) {
-    this.messageService.add({ severity: 'warn', summary: 'Ошибка', detail: 'Заполните ФИО, дату рождения и номер документа' });
-    return;
-  }
-  if (this.registerForm.password !== this.registerForm.confirmPassword) {
-    this.messageService.add({ severity: 'error', summary: 'Ошибка', detail: 'Пароли не совпадают' });
-    return;
-  }
-
-  this.isLoading = true;
-
-  // Явное приведение типов для соответствия интерфейсу GuestBookingInfo
-  const guestData: GuestBookingInfo = {
-    lastName: this.registerForm.lastName,
-    firstName: this.registerForm.firstName,
-    middleName: this.registerForm.middleName || null,
-    birthDate: this.registerForm.birthDate || '', // Гарантируем тип string
-    gender: this.registerForm.gender,
-    phone: this.registerForm.phone || null,
-    email: this.registerForm.email || null,
-    citizenship: this.registerForm.citizenship || null,
-    documentType: this.registerForm.documentType,
-    documentNumber: this.registerForm.documentNumber
-  };
-
-  this.apiService.createGuest(guestData).subscribe({
-    next: (createdGuest: any) => {
-      if (this.isBrowser) {
-        localStorage.setItem('client_guest_id', createdGuest.id.toString());
-        localStorage.setItem('client_guest_name', `${createdGuest.firstName} ${createdGuest.lastName}`);
-      }
-      this.isLoading = false;
-      this.closeAuthModal();
-      this.messageService.add({ severity: 'success', summary: 'Успех', detail: 'Регистрация успешна!' });
-      this.router.navigate(['/profile']);
-    },
-    error: (err) => {
-      this.isLoading = false;
-      this.messageService.add({ 
-        severity: 'error', 
-        summary: 'Ошибка', 
-        detail: err.error?.message || 'Гость с таким документом уже существует или данные заполнены неверно' 
-      });
+  onRegister(): void {
+    if (!this.registerForm.lastName || !this.registerForm.firstName || !this.registerForm.documentNumber || !this.registerForm.birthDate) {
+      this.messageService.add({ severity: 'warn', summary: 'Ошибка', detail: 'Заполните ФИО, дату рождения и номер документа' });
+      return;
     }
-  });
-}
+    this.isLoading = true;
+    const guestData: GuestBookingInfo = {
+      lastName: this.registerForm.lastName,
+      firstName: this.registerForm.firstName,
+      middleName: this.registerForm.middleName || null,
+      birthDate: this.registerForm.birthDate || '',
+      gender: this.registerForm.gender,
+      phone: this.registerForm.phone || null,
+      email: this.registerForm.email || null,
+      citizenship: this.registerForm.citizenship || null,
+      documentType: this.registerForm.documentType,
+      documentNumber: this.normalizeDocumentNumber(this.registerForm.documentNumber) // нормализуем
+    };
+    this.apiService.createGuest(guestData).subscribe({
+      next: (createdGuest: any) => {
+        // ВАЖНО: используем authService.loginAsGuestById
+        this.authService.loginAsGuestById(createdGuest.id.toString(), `${createdGuest.firstName} ${createdGuest.lastName}`);
+        this.isLoading = false;
+        this.closeAuthModal();
+        this.messageService.add({ severity: 'success', summary: 'Успех', detail: 'Регистрация успешна!' });
+        this.router.navigate(['/profile']);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        if (err.status === 409) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Уже зарегистрирован',
+            detail: 'Гость с таким номером документа уже существует. Пожалуйста, используйте форму "Войти".'
+          });
+          this.isLoginMode = true;
+          this.loginDocumentNumber = this.registerForm.documentNumber;
+        } else {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Ошибка',
+            detail: err.error?.message || 'Ошибка при регистрации'
+          });
+        }
+      }
+    });
+  }
 
   continueAsGuest(): void {
     this.showGuestWarning = true;
     setTimeout(() => {
-      if (this.isBrowser) {
-        localStorage.setItem('is_guest', 'true');
-      }
-      this.router.navigate(['/home'], { queryParams: { guest: 'true' } });
+      this.authService.loginAsGuest();
+      this.router.navigate(['/home']);
     }, 1500);
   }
 
   private resetForms(): void {
-    this.loginForm = { username: '', password: '' };
+    this.loginDocumentNumber = '';
     this.registerForm = {
       lastName: '', firstName: '', middleName: '', birthDate: '', gender: 'MALE',
       phone: '', email: '', citizenship: 'Россия', documentType: 'PASSPORT', documentNumber: '',

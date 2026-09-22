@@ -5,6 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-profile',
@@ -16,13 +17,14 @@ import { ApiService } from '../../core/services/api.service';
 export class ProfileComponent implements OnInit {
   private api = inject(ApiService);
   private router = inject(Router);
+  private authService = inject(AuthService);
 
-  guestName = signal(localStorage.getItem('client_guest_name') || 'Гость');
+  guestName = signal(this.authService.getGuestName());
   bookings = signal<any[]>([]);
   isLoading = signal(true);
 
   ngOnInit(): void {
-    const guestId = localStorage.getItem('client_guest_id');
+    const guestId = this.authService.getGuestId();
     if (!guestId) {
       this.router.navigate(['/']);
       return;
@@ -53,8 +55,7 @@ export class ProfileComponent implements OnInit {
   }
 
   logout(): void {
-    localStorage.removeItem('client_guest_id');
-    localStorage.removeItem('client_guest_name');
+    this.authService.logout();
     this.router.navigate(['/']);
   }
 }
