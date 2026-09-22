@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
@@ -9,32 +9,29 @@ import { AuthService } from '../core/services/auth.service';
   standalone: true,
   imports: [RouterLink, RouterLinkActive, ButtonModule],
   template: `
-    <header class="site-header">
-      <div class="header-inner">
-        <a routerLink="/" class="logo">
-          <span class="logo-icon">🏨</span>
-          <span class="logo-text">Mantera Hotels</span>
-        </a>
-        <nav class="main-nav">
-          <!-- УМНАЯ ССЫЛКА: если авторизован — /home, иначе — / (лендинг) -->
-          <a [routerLink]="authService.isAuthenticated() ? '/home' : '/'" 
-             routerLinkActive="active" 
-             [routerLinkActiveOptions]="{exact: true}">Главная</a>
-          <a routerLink="/search" routerLinkActive="active">Найти номер</a>
-          @if (authService.isAuthenticated()) {
-            <a routerLink="/profile" routerLinkActive="active">Личный кабинет</a>
-          }
-        </nav>
-        <div class="header-contacts">
-          @if (authService.isAuthenticated()) {
-            <button pButton label="Выйти" icon="pi pi-sign-out" size="small" severity="secondary" (click)="logout()"></button>
-          } @else {
-            <span class="phone">+7 (861) 200-00-01</span>
-          }
-        </div>
-      </div>
-    </header>
-  `,
+<header class="site-header">
+  <div class="header-inner">
+    <a routerLink="/" class="logo">
+      <span class="logo-icon"></span>
+      <span class="logo-text">Mantera Hotels</span>
+    </a>
+    <nav class="main-nav">
+      <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Главная</a>
+      <a routerLink="/search" routerLinkActive="active">Найти номер</a>
+      @if (authService.isAuthenticated()) {
+        <a routerLink="/profile" routerLinkActive="active">Личный кабинет</a>
+      }
+    </nav>
+    <div class="header-contacts">
+      @if (authService.isAuthenticated()) {
+        <button pButton label="Выйти" icon="pi pi-sign-out" size="small" severity="secondary" (click)="logout()"></button>
+      } @else {
+        <span class="phone">+7 (861) 200-00-01</span>
+      }
+    </div>
+  </div>
+</header>
+`,
   styles: [`
     .site-header {
       background: #1a2332;
@@ -100,7 +97,7 @@ export class HeaderComponent implements OnInit {
   public authService = inject(AuthService);
 
   ngOnInit(): void {
-    // Сигналы AuthService уже инициализированы из localStorage
+    // AuthService сам инициализируется из localStorage при создании сервиса
   }
 
   logout(): void {

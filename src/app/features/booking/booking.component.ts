@@ -9,6 +9,7 @@ import { MessageModule } from 'primeng/message';
 import { ApiService } from '../../core/services/api.service';
 import { SeoService } from '../../core/services/seo.service';
 import { GuestBookingInfo, PublicBookingRequest } from '../../shared/models/booking.model';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-booking',
@@ -29,6 +30,7 @@ export class BookingComponent implements OnInit {
   private router = inject(Router);
   private api = inject(ApiService);
   private seo = inject(SeoService);
+  private authService = inject(AuthService);
 
   // Параметры из URL
   hotelId = 0;
@@ -64,24 +66,44 @@ export class BookingComponent implements OnInit {
   isSubmitting = signal(false);
   errorMessage = signal<string | null>(null);
 
-  ngOnInit(): void {
-    this.seo.setTags('Бронирование номера', 'Оформите бронирование в отеле Mantera');
-    const qp = this.route.snapshot.queryParams;
-    this.hotelId = Number(qp['hotelId']) || 0;
-    this.roomId = Number(qp['roomId']) || 0;
-    this.roomTypeId = Number(qp['roomTypeId']) || 0;
-    this.checkIn = qp['checkIn'] || '';
-    this.checkOut = qp['checkOut'] || '';
-    this.adults = Number(qp['adults']) || 2;
-    this.children = Number(qp['children']) || 0;
-    this.pricePerNight = Number(qp['pricePerNight']) || 0;
-    this.roomTypeName = qp['roomTypeName'] || '';
-    this.roomNumber = qp['roomNumber'] || '';
+ngOnInit(): void {
+  this.seo.setTags('Бронирование номера', 'Оформите бронирование в отеле Mantera');
+  const qp = this.route.snapshot.queryParams;
+  this.hotelId = Number(qp['hotelId']) || 0;
+  this.roomId = Number(qp['roomId']) || 0;
+  this.roomTypeId = Number(qp['roomTypeId']) || 0;
+  this.checkIn = qp['checkIn'] || '';
+  this.checkOut = qp['checkOut'] || '';
+  this.adults = Number(qp['adults']) || 2;
+  this.children = Number(qp['children']) || 0;
+  this.pricePerNight = Number(qp['pricePerNight']) || 0;
+  this.roomTypeName = qp['roomTypeName'] || '';
+  this.roomNumber = qp['roomNumber'] || '';
 
-    if (!this.hotelId || !this.roomId) {
-      this.router.navigate(['/']);
+  if (!this.hotelId || !this.roomId) {
+    this.router.navigate(['/']);
+    return;
+  }
+
+  // Если пользователь авторизован — подставляем его данные из профиля
+  if (this.authService.isAuthorizedGuest()) {
+    const guestData = this.authService.getGuestData();
+    if (guestData) {
+      this.guest = {
+        lastName: guestData.lastName || '',
+        firstName: guestData.firstName || '',
+        middleName: guestData.middleName || null,
+        birthDate: guestData.birthDate || '',
+        gender: guestData.gender || 'MALE',
+        phone: guestData.phone || '',
+        email: guestData.email || '',
+        citizenship: guestData.citizenship || 'Россия',
+        documentType: guestData.documentType || 'PASSPORT',
+        documentNumber: guestData.documentNumber || ''
+      };
     }
   }
+}
 
   get nights(): number {
     if (!this.checkIn || !this.checkOut) return 0;

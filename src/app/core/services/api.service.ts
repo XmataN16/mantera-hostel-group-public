@@ -59,4 +59,12 @@ export class ApiService {
   getGuestByDocument(documentNumber: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/guests/by-document/${documentNumber}`);
   }
+
+  updateGuest(guestId: number, guest: any): Observable<any> {
+  return this.http.put(`${this.apiUrl}/guests/${guestId}`, guest);
+  }
+
+  getGuestById(id: number): Observable<any> {
+  return this.http.get(`${this.apiUrl}/guests/${id}`);
+  }
 }

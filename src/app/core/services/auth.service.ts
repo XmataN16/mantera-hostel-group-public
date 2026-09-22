@@ -31,7 +31,15 @@ export class AuthService {
   private roles = signal<string[]>(JSON.parse(getStorageItem('roles') || '[]'));
   private isGuest = signal<boolean>(getStorageItem('is_guest') === 'true');
 
+  // isAuthenticated — для guard (пропускает всех кто "вошёл" любым способом)
   isAuthenticated = computed(() => !!this.token() || this.isGuest());
+
+  // isAuthorizedGuest — только если реально вошёл по документу/зарегистрировался (есть client_guest_id)
+  isAuthorizedGuest = computed(() => !!getStorageItem('client_guest_id'));
+
+  // isAnonymousGuest — только "продолжил как гость" без реального входа
+  isAnonymousGuest = computed(() => this.isGuest() && !getStorageItem('client_guest_id'));
+
   currentUser = computed(() => this.username());
   userRoles = computed(() => this.roles());
   isAdmin = computed(() => this.roles().includes('ADMIN'));
@@ -47,6 +55,7 @@ export class AuthService {
         removeStorageItem('is_guest');
         removeStorageItem('client_guest_id');
         removeStorageItem('client_guest_name');
+        removeStorageItem('client_guest_data');
         this.token.set(response.accessToken);
         this.username.set(response.username);
         this.roles.set(response.roles);
@@ -55,11 +64,13 @@ export class AuthService {
     );
   }
 
-  // НОВЫЙ МЕТОД: вход гостя по номеру документа (после успешного запроса к /guests/by-document)
-  loginAsGuestById(guestId: string, guestName: string): void {
+  loginAsGuestById(guestId: string, guestName: string, guestData?: any): void {
     setStorageItem('is_guest', 'true');
     setStorageItem('client_guest_id', guestId);
     setStorageItem('client_guest_name', guestName);
+    if (guestData) {
+      setStorageItem('client_guest_data', JSON.stringify(guestData));
+    }
     removeStorageItem('access_token');
     removeStorageItem('username');
     removeStorageItem('roles');
@@ -76,6 +87,7 @@ export class AuthService {
     removeStorageItem('username');
     removeStorageItem('roles');
     removeStorageItem('client_guest_id');
+    removeStorageItem('client_guest_data');
     this.token.set(null);
     this.username.set('Гость');
     this.roles.set([]);
@@ -89,6 +101,7 @@ export class AuthService {
     removeStorageItem('is_guest');
     removeStorageItem('client_guest_id');
     removeStorageItem('client_guest_name');
+    removeStorageItem('client_guest_data');
     this.token.set(null);
     this.username.set(null);
     this.roles.set([]);
@@ -111,12 +124,29 @@ export class AuthService {
     return this.isGuest();
   }
 
-  // Вспомогательный метод для получения ID гостя
   getGuestId(): string | null {
     return getStorageItem('client_guest_id');
   }
 
   getGuestName(): string {
     return getStorageItem('client_guest_name') || 'Гость';
+  }
+
+  getGuestData(): any {
+    const data = getStorageItem('client_guest_data');
+    return data ? JSON.parse(data) : null;
+  }
+
+  setGuestData(data: any): void {
+    setStorageItem('client_guest_data', JSON.stringify(data));
+  }
+
+  updateGuestData(data: any): void {
+    this.setGuestData(data);
+    // Обновляем имя в хранилище
+    if (data.firstName && data.lastName) {
+      setStorageItem('client_guest_name', `${data.firstName} ${data.lastName}`);
+      this.username.set(`${data.firstName} ${data.lastName}`);
+    }
   }
 }

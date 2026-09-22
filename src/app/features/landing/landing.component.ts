@@ -62,7 +62,6 @@ export class LandingComponent implements OnInit, OnDestroy {
     password: '',
     confirmPassword: ''
   };
-  showGuestWarning = false;
 
   constructor() {
     this.mouseMoveListener = this.handleMouseMove.bind(this);
@@ -107,14 +106,12 @@ export class LandingComponent implements OnInit, OnDestroy {
   openLoginModal(): void {
     this.isLoginMode = true;
     this.displayAuthModal = true;
-    this.showGuestWarning = false;
     this.loginDocumentNumber = '';
   }
 
   openRegisterModal(): void {
     this.isLoginMode = false;
     this.displayAuthModal = true;
-    this.showGuestWarning = false;
   }
 
   closeAuthModal(): void {
@@ -136,8 +133,12 @@ export class LandingComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.apiService.getGuestByDocument(normalizedDoc).subscribe({
       next: (guest: any) => {
-        // ВАЖНО: используем authService.loginAsGuestById — это установит is_guest=true
-        this.authService.loginAsGuestById(guest.id.toString(), `${guest.firstName} ${guest.lastName}`);
+        // Сохраняем полные данные гостя
+        this.authService.loginAsGuestById(
+          guest.id.toString(),
+          `${guest.firstName} ${guest.lastName}`,
+          guest
+        );
         this.isLoading = false;
         this.closeAuthModal();
         this.messageService.add({ severity: 'success', summary: 'Успех', detail: 'Добро пожаловать!' });
@@ -174,12 +175,16 @@ export class LandingComponent implements OnInit, OnDestroy {
       email: this.registerForm.email || null,
       citizenship: this.registerForm.citizenship || null,
       documentType: this.registerForm.documentType,
-      documentNumber: this.normalizeDocumentNumber(this.registerForm.documentNumber) // нормализуем
+      documentNumber: this.normalizeDocumentNumber(this.registerForm.documentNumber)
     };
     this.apiService.createGuest(guestData).subscribe({
       next: (createdGuest: any) => {
-        // ВАЖНО: используем authService.loginAsGuestById
-        this.authService.loginAsGuestById(createdGuest.id.toString(), `${createdGuest.firstName} ${createdGuest.lastName}`);
+        // Сохраняем полные данные гостя
+        this.authService.loginAsGuestById(
+          createdGuest.id.toString(),
+          `${createdGuest.firstName} ${createdGuest.lastName}`,
+          createdGuest
+        );
         this.isLoading = false;
         this.closeAuthModal();
         this.messageService.add({ severity: 'success', summary: 'Успех', detail: 'Регистрация успешна!' });
@@ -206,14 +211,6 @@ export class LandingComponent implements OnInit, OnDestroy {
     });
   }
 
-  continueAsGuest(): void {
-    this.showGuestWarning = true;
-    setTimeout(() => {
-      this.authService.loginAsGuest();
-      this.router.navigate(['/home']);
-    }, 1500);
-  }
-
   private resetForms(): void {
     this.loginDocumentNumber = '';
     this.registerForm = {
@@ -221,6 +218,5 @@ export class LandingComponent implements OnInit, OnDestroy {
       phone: '', email: '', citizenship: 'Россия', documentType: 'PASSPORT', documentNumber: '',
       password: '', confirmPassword: ''
     };
-    this.showGuestWarning = false;
   }
 }
