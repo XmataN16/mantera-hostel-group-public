@@ -1,0 +1,265 @@
+// src/app/features/landing/landing.component.scss
+.landing-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #0a0a0a;
+}
+
+.parallax-scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  perspective: 1000px;
+}
+
+.parallax-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.1s ease-out;
+  pointer-events: none;
+}
+
+// Background Layer
+.layer-bg {
+  .gradient-bg {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, 
+      #1e3c72 0%, 
+      #2a5298 50%, 
+      #7e8ba3 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
+  }
+}
+
+// Middle Layer
+.layer-mid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  .hotel-illustration {
+    width: 80%;
+    max-width: 800px;
+    height: auto;
+    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3));
+  }
+}
+
+// Front Layer
+.layer-front {
+  .decorative-elements {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .circle-1 {
+      width: 300px;
+      height: 300px;
+      top: 10%;
+      left: 10%;
+    }
+    
+    .circle-2 {
+      width: 200px;
+      height: 200px;
+      bottom: 20%;
+      right: 15%;
+    }
+    
+    .circle-3 {
+      width: 150px;
+      height: 150px;
+      top: 60%;
+      left: 70%;
+    }
+  }
+}
+
+// Content Layer
+.layer-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  
+  .content-wrapper {
+    text-align: center;
+    z-index: 10;
+    padding: 2rem;
+  }
+}
+
+.main-title {
+  margin-bottom: 1.5rem;
+  
+  .title-line {
+    display: block;
+    font-size: 4rem;
+    font-weight: 800;
+    color: #ffffff;
+    text-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    letter-spacing: 2px;
+    animation: titleFadeIn 1s ease-out;
+  }
+  
+  .title-subtitle {
+    display: block;
+    font-size: 1.5rem;
+    color: rgba(255,255,255,0.9);
+    margin-top: 0.5rem;
+    font-weight: 300;
+    animation: subtitleFadeIn 1.5s ease-out;
+  }
+}
+
+.description {
+  font-size: 1.25rem;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 3rem;
+  animation: descriptionFadeIn 2s ease-out;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  animation: buttonsFadeIn 2.5s ease-out;
+  
+  button {
+    min-width: 200px;
+  }
+}
+
+// Auth Modal Styles
+.auth-modal-content {
+  padding: 1rem;
+  
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      
+      label {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 0.9rem;
+      }
+    }
+    
+    .form-footer {
+      text-align: center;
+      
+      a {
+        color: #3498db;
+        cursor: pointer;
+        font-size: 0.9rem;
+        
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}
+
+.modal-header {
+  h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.5rem;
+  }
+}
+
+// Animations
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes titleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes subtitleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes descriptionFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes buttonsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .main-title .title-line {
+    font-size: 2.5rem;
+  }
+  
+  .main-title .title-subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .description {
+    font-size: 1rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    
+    button {
+      width: 100%;
+    }
+  }
+}

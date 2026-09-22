@@ -21,6 +21,7 @@
     "@angular/platform-server": "^22.1.0",
     "@angular/router": "^22.1.0",
     "@angular/ssr": "^22.1.8",
+    "@primeng/themes": "^18.0.0",
     "express": "^5.1.0",
     "primeicons": "^7.0.0",
     "primeng": "^17.18.0",

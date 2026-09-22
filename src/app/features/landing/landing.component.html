@@ -1,0 +1,114 @@
+<div class="landing-container">
+  <div class="parallax-scene">
+    <div class="parallax-layer layer-bg">
+      <div class="gradient-bg"></div>
+    </div>
+    <div class="parallax-layer layer-mid">
+      <svg class="hotel-illustration" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+        <rect x="200" y="250" width="400" height="300" fill="rgba(255,255,255,0.1)" rx="20"/>
+        <rect x="250" y="300" width="80" height="80" fill="rgba(255,255,255,0.2)" rx="10"/>
+        <rect x="370" y="300" width="80" height="80" fill="rgba(255,255,255,0.2)" rx="10"/>
+        <rect x="490" y="300" width="80" height="80" fill="rgba(255,255,255,0.2)" rx="10"/>
+        <rect x="250" y="420" width="80" height="80" fill="rgba(255,255,255,0.2)" rx="10"/>
+        <rect x="370" y="420" width="80" height="80" fill="rgba(255,255,255,0.2)" rx="10"/>
+        <rect x="490" y="420" width="80" height="80" fill="rgba(255,255,255,0.2)" rx="10"/>
+        <polygon points="400,150 250,250 550,250" fill="rgba(255,255,255,0.15)"/>
+      </svg>
+    </div>
+    <div class="parallax-layer layer-front">
+      <div class="decorative-elements">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
+        <div class="circle circle-3"></div>
+      </div>
+    </div>
+    <div class="parallax-layer layer-content">
+      <div class="content-wrapper">
+        <h1 class="main-title">
+          <span class="title-line">Mantera Hotels</span>
+          <span class="title-subtitle">Сеть отелей на побережье Чёрного моря</span>
+        </h1>
+        <p class="description">Комфорт, сервис и незабываемый отдых ждут вас</p>
+        <div class="action-buttons">
+          <button pButton label="Войти" icon="pi pi-sign-in" class="p-button-rounded p-button-lg" (click)="openLoginModal()"></button>
+          <button pButton label="Регистрация" icon="pi pi-user-plus" class="p-button-rounded p-button-lg p-button-outlined" (click)="openRegisterModal()"></button>
+          <button pButton label="Продолжить как гость" icon="pi pi-arrow-right" class="p-button-rounded p-button-lg p-button-text" (click)="continueAsGuest()"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p-dialog [(visible)]="displayAuthModal" [modal]="true" [style]="{ width: '500px' }" [closable]="true" [closeOnEscape]="true" header="">
+    <ng-template pTemplate="header">
+      <div class="modal-header">
+        <h3>{{ isLoginMode ? 'Вход в систему' : 'Регистрация' }}</h3>
+      </div>
+    </ng-template>
+    <div class="auth-modal-content">
+      <p-messages *ngIf="showGuestWarning" [value]="[{severity:'info', summary:'Гостевой доступ', detail:'Вы войдете как гость. Некоторые функции будут ограничены.'}]"></p-messages>
+      
+      <!-- Форма входа -->
+      <form *ngIf="isLoginMode" (ngSubmit)="onLogin()" class="auth-form">
+        <div class="field">
+          <label for="username">Логин</label>
+          <input id="username" type="text" pInputText [(ngModel)]="loginForm.username" name="username" placeholder="Введите логин" class="w-full">
+        </div>
+        <div class="field">
+          <label for="password">Пароль</label>
+          <p-password id="password" [(ngModel)]="loginForm.password" name="password" placeholder="Введите пароль" [toggleMask]="true" [feedback]="false" class="w-full"></p-password>
+        </div>
+        <div class="form-footer">
+          <a class="forgot-password" (click)="isLoginMode = false">Нет аккаунта? Зарегистрироваться</a>
+        </div>
+        <button pButton type="submit" label="Войти" icon="pi pi-sign-in" [loading]="isLoading" class="w-full"></button>
+      </form>
+
+      <!-- Форма регистрации (ИСПРАВЛЕНА: добавлено поле birthDate) -->
+      <form *ngIf="!isLoginMode" (ngSubmit)="onRegister()" class="auth-form">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+          <div class="field">
+            <label>Фамилия *</label>
+            <input type="text" pInputText [(ngModel)]="registerForm.lastName" name="lastName" class="w-full" required>
+          </div>
+          <div class="field">
+            <label>Имя *</label>
+            <input type="text" pInputText [(ngModel)]="registerForm.firstName" name="firstName" class="w-full" required>
+          </div>
+        </div>
+        
+        <!-- ДОБАВЛЕНО ПОЛЕ ДАТЫ РОЖДЕНИЯ -->
+        <div class="field">
+          <label>Дата рождения *</label>
+          <input type="date" pInputText [(ngModel)]="registerForm.birthDate" name="birthDate" class="w-full" required>
+        </div>
+
+        <div class="field">
+          <label>Номер документа (Паспорт) *</label>
+          <input type="text" pInputText [(ngModel)]="registerForm.documentNumber" name="documentNumber" class="w-full" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+          <div class="field">
+            <label>Телефон</label>
+            <input type="text" pInputText [(ngModel)]="registerForm.phone" name="phone" class="w-full">
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" pInputText [(ngModel)]="registerForm.email" name="email" class="w-full">
+          </div>
+        </div>
+        <div class="field">
+          <label>Пароль *</label>
+          <p-password [(ngModel)]="registerForm.password" name="password" [toggleMask]="true" [feedback]="false" styleClass="w-full"></p-password>
+        </div>
+        <div class="field">
+          <label>Подтвердите пароль *</label>
+          <p-password [(ngModel)]="registerForm.confirmPassword" name="confirmPassword" [toggleMask]="true" [feedback]="false" styleClass="w-full"></p-password>
+        </div>
+        <div class="form-footer">
+          <a class="back-to-login" (click)="isLoginMode = true">Уже есть аккаунт? Войти</a>
+        </div>
+        <button pButton type="submit" label="Зарегистрироваться" icon="pi pi-user-plus" class="w-full" [loading]="isLoading"></button>
+      </form>
+    </div>
+  </p-dialog>
+</div>

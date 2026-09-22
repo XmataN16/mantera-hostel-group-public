@@ -53,9 +53,9 @@ export interface GuestBookingInfo {
   middleName: string | null;
   birthDate: string;
   gender: string;
-  phone: string;
-  email: string;
-  citizenship: string;
+  phone: string | null;
+  email: string | null;
+  citizenship: string | null;
   documentType: string;
   documentNumber: string;
 }

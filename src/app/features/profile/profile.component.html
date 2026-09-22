@@ -1,0 +1,40 @@
+<div class="profile-container">
+  <div class="profile-header">
+    <h1>Личный кабинет</h1>
+    <p>Добро пожаловать, <strong>{{ guestName() }}</strong></p>
+    <button pButton label="Выйти" icon="pi pi-sign-out" severity="danger" (click)="logout()"></button>
+  </div>
+
+  <div class="bookings-section">
+    <h2>История бронирований</h2>
+    
+    @if (isLoading()) {
+      <p>Загрузка данных...</p>
+    } @else if (bookings().length === 0) {
+      <p>У вас пока нет бронирований.</p>
+    } @else {
+      <p-table [value]="bookings()" styleClass="p-datatable-gridlines">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>№ Бронирования</th>
+            <th>Отель (ID)</th>
+            <th>Даты</th>
+            <th>Статус</th>
+            <th>Сумма</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-booking>
+          <tr>
+            <td><strong>{{ booking.reservationNumber }}</strong></td>
+            <td>{{ booking.hotelId }}</td>
+            <td>{{ booking.checkInDate }} — {{ booking.checkOutDate }}</td>
+            <td>
+              <p-tag [value]="getStatusLabel(booking.status)" [severity]="getStatusSeverity(booking.status)"></p-tag>
+            </td>
+            <td>{{ booking.totalAmount | currency:'RUB':'symbol':'1.0-0' }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+  </div>
+</div>
