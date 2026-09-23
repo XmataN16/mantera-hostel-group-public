@@ -6,6 +6,7 @@ import {
 } from '@angular/ssr/node';
 import express from 'express';
 import { join } from 'node:path';
+import http from 'node:http';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -27,6 +28,32 @@ const angularApp = new AngularNodeAppEngine();
 /**
  * Serve static files from /browser
  */
+
+app.use('/api', (req, res) => {
+  const options = {
+    hostname: 'backend', // Имя сервиса из docker-compose.yml
+    port: 8080,
+    path: `/api${req.url}`,
+    method: req.method,
+    headers: {
+      ...req.headers,
+      host: 'backend:8080'
+    }
+  };
+
+  const proxyReq = http.request(options, (proxyRes) => {
+    res.writeHead(proxyRes.statusCode || 500, proxyRes.headers);
+    proxyRes.pipe(res, { end: true });
+  });
+
+  proxyReq.on('error', (err) => {
+    console.error('SSR API Proxy Error:', err);
+    res.status(500).send('Backend unavailable');
+  });
+
+  req.pipe(proxyReq, { end: true });
+});
+
 app.use(
   express.static(browserDistFolder, {
     maxAge: '1y',
