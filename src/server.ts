@@ -13,6 +13,8 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
+app.set('trust proxy', true);
+
 /**
  * Example Express Rest API endpoints can be defined here.
  * Uncomment and define endpoints as necessary.
@@ -31,7 +33,7 @@ const angularApp = new AngularNodeAppEngine();
 
 app.use('/api', (req, res) => {
   const options = {
-    hostname: 'backend', // Имя сервиса из docker-compose.yml
+    hostname: 'backend', 
     port: 8080,
     path: `/api${req.url}`,
     method: req.method,
@@ -92,6 +94,4 @@ if (isMainModule(import.meta.url) || process.env['pm_id']) {
 /**
  * Request handler used by the Angular CLI (for dev-server and during build) or Firebase Cloud Functions.
  */
-export const reqHandler = createNodeRequestHandler(app, {
-  trustProxyHeaders: true
-});
+export const reqHandler = createNodeRequestHandler(app);
