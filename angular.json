@@ -39,10 +39,11 @@
             "server": "src/main.server.ts",
             "outputMode": "server",
             "security": {
-              "allowedHosts": ["localhost"]
+              "allowedHosts": ["*"]
             },
             "ssr": {
-              "entry": "src/server.ts"
+              "entry": "src/server.ts",
+              "trustProxyHeaders": true
             }
           },
           "configurations": {
