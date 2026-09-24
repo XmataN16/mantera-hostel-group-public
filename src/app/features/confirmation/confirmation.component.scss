@@ -58,15 +58,11 @@ h1 {
   display: flex;
   justify-content: center;
   gap: 1rem;
-  
-  // Делаем текст кнопки белым
-  button.p-button {
+
+  .p-button {
     color: #ffffff !important;
     
-    .p-button-label {
-      color: #ffffff !important;
-    }
-    
+    .p-button-label,
     .p-button-icon {
       color: #ffffff !important;
     }
