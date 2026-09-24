@@ -5,6 +5,7 @@
   min-height: 60vh;
   padding: 2rem 1.5rem;
 }
+
 .confirmation-card {
   background: #fff;
   border-radius: 16px;
@@ -14,22 +15,27 @@
   max-width: 520px;
   width: 100%;
 }
+
 .success-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+
 h1 {
   margin: 0 0 0.5rem;
   font-size: 1.6rem;
   color: #2e7d32;
 }
+
 .subtitle {
   color: #78909c;
   margin: 0 0 1.5rem;
 }
+
 .details {
   background: #f5f7fa;
   border-radius: 10px;
   padding: 1rem 1.25rem;
   margin-bottom: 1.5rem;
 }
+
 .detail-row {
   display: flex;
   justify-content: space-between;
@@ -38,6 +44,7 @@ h1 {
   span { color: #78909c; }
   strong { color: #1a2332; }
 }
+
 .info-box {
   text-align: left;
   background: #e8f5e9;
@@ -46,8 +53,22 @@ h1 {
   margin-bottom: 1.5rem;
   p { margin: 0.25rem 0; font-size: 0.9rem; color: #2e7d32; }
 }
+
 .actions {
   display: flex;
   justify-content: center;
   gap: 1rem;
+  
+  // Делаем текст кнопки белым
+  button.p-button {
+    color: #ffffff !important;
+    
+    .p-button-label {
+      color: #ffffff !important;
+    }
+    
+    .p-button-icon {
+      color: #ffffff !important;
+    }
+  }
 }
