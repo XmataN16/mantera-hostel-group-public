@@ -66,44 +66,45 @@ export class BookingComponent implements OnInit {
   isSubmitting = signal(false);
   errorMessage = signal<string | null>(null);
 
-ngOnInit(): void {
-  this.seo.setTags('Бронирование номера', 'Оформите бронирование в отеле Mantera');
-  const qp = this.route.snapshot.queryParams;
-  this.hotelId = Number(qp['hotelId']) || 0;
-  this.roomId = Number(qp['roomId']) || 0;
-  this.roomTypeId = Number(qp['roomTypeId']) || 0;
-  this.checkIn = qp['checkIn'] || '';
-  this.checkOut = qp['checkOut'] || '';
-  this.adults = Number(qp['adults']) || 2;
-  this.children = Number(qp['children']) || 0;
-  this.pricePerNight = Number(qp['pricePerNight']) || 0;
-  this.roomTypeName = qp['roomTypeName'] || '';
-  this.roomNumber = qp['roomNumber'] || '';
+  ngOnInit(): void {
+    this.seo.setTags('Бронирование номера', 'Оформите бронирование в отеле Mantera');
 
-  if (!this.hotelId || !this.roomId) {
-    this.router.navigate(['/']);
-    return;
-  }
+    const qp = this.route.snapshot.queryParams;
+    this.hotelId = Number(qp['hotelId']) || 0;
+    this.roomId = Number(qp['roomId']) || 0;
+    this.roomTypeId = Number(qp['roomTypeId']) || 0;
+    this.checkIn = qp['checkIn'] || '';
+    this.checkOut = qp['checkOut'] || '';
+    this.adults = Number(qp['adults']) || 2;
+    this.children = Number(qp['children']) || 0;
+    this.pricePerNight = Number(qp['pricePerNight']) || 0;
+    this.roomTypeName = qp['roomTypeName'] || '';
+    this.roomNumber = qp['roomNumber'] || '';
 
-  // Если пользователь авторизован — подставляем его данные из профиля
-  if (this.authService.isAuthorizedGuest()) {
-    const guestData = this.authService.getGuestData();
-    if (guestData) {
-      this.guest = {
-        lastName: guestData.lastName || '',
-        firstName: guestData.firstName || '',
-        middleName: guestData.middleName || null,
-        birthDate: guestData.birthDate || '',
-        gender: guestData.gender || 'MALE',
-        phone: guestData.phone || '',
-        email: guestData.email || '',
-        citizenship: guestData.citizenship || 'Россия',
-        documentType: guestData.documentType || 'PASSPORT',
-        documentNumber: guestData.documentNumber || ''
-      };
+    if (!this.hotelId || !this.roomId) {
+      this.router.navigate(['/']);
+      return;
+    }
+
+    // Если пользователь авторизован — подставляем его данные из профиля
+    if (this.authService.isAuthorizedGuest()) {
+      const guestData = this.authService.getGuestData();
+      if (guestData) {
+        this.guest = {
+          lastName: guestData.lastName || '',
+          firstName: guestData.firstName || '',
+          middleName: guestData.middleName || null,
+          birthDate: guestData.birthDate || '',
+          gender: guestData.gender || 'MALE',
+          phone: guestData.phone || '',
+          email: guestData.email || '',
+          citizenship: guestData.citizenship || 'Россия',
+          documentType: guestData.documentType || 'PASSPORT',
+          documentNumber: guestData.documentNumber || ''
+        };
+      }
     }
   }
-}
 
   get nights(): number {
     if (!this.checkIn || !this.checkOut) return 0;
@@ -137,50 +138,65 @@ ngOnInit(): void {
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
-    // 1. Создаём гостя
-    this.api.createGuest(this.guest).subscribe({
-      next: (createdGuest: any) => {
-        // 2. Создаём бронирование
-        const booking: PublicBookingRequest = {
-          hotelId: this.hotelId,
-          guestId: createdGuest.id,
-          reservationNumber: null,
-          source: 'WEBSITE',
-          checkInDate: this.checkIn,
-          checkOutDate: this.checkOut,
-          adults: this.adults,
-          children: this.children,
-          comment: 'Бронирование с публичного сайта',
-          rooms: [
-            {
-              roomTypeId: this.roomTypeId,
-              roomId: this.roomId,
-              ratePlanId: null,
-              guestsCount: this.adults + this.children,
-              pricePerNight: this.pricePerNight,
-            },
-          ],
-        };
+    // Проверяем, авторизован ли гость
+    if (this.authService.isAuthorizedGuest()) {
+      // Авторизованный гость — используем существующий guestId
+      const guestId = this.authService.getGuestId();
+      if (!guestId) {
+        this.isSubmitting.set(false);
+        this.errorMessage.set('Не удалось определить ID гостя');
+        return;
+      }
+      this.createBooking(Number(guestId));
+    } else {
+      // Анонимный гость — сначала создаём профиль, потом бронируем
+      this.api.createGuest(this.guest).subscribe({
+        next: (createdGuest: any) => {
+          this.createBooking(createdGuest.id);
+        },
+        error: (err) => {
+          this.isSubmitting.set(false);
+          this.errorMessage.set(
+            err?.error?.message || 'Ошибка при создании профиля гостя'
+          );
+        },
+      });
+    }
+  }
 
-        this.api.createBooking(booking).subscribe({
-          next: (result) => {
-            this.isSubmitting.set(false);
-            this.router.navigate(['/confirmation', result.id], {
-              queryParams: { number: result.reservationNumber },
-            });
-          },
-          error: (err) => {
-            this.isSubmitting.set(false);
-            this.errorMessage.set(
-              err?.error?.message || 'Ошибка при создании бронирования'
-            );
-          },
+  private createBooking(guestId: number): void {
+    const booking: PublicBookingRequest = {
+      hotelId: this.hotelId,
+      guestId: guestId,
+      reservationNumber: null,
+      source: 'WEBSITE',
+      checkInDate: this.checkIn,
+      checkOutDate: this.checkOut,
+      adults: this.adults,
+      children: this.children,
+      comment: 'Бронирование с публичного сайта',
+      rooms: [
+        {
+          roomTypeId: this.roomTypeId,
+          roomId: this.roomId,
+          ratePlanId: null,
+          guestsCount: this.adults + this.children,
+          pricePerNight: this.pricePerNight,
+        },
+      ],
+    };
+
+    this.api.createBooking(booking).subscribe({
+      next: (result) => {
+        this.isSubmitting.set(false);
+        this.router.navigate(['/confirmation', result.id], {
+          queryParams: { number: result.reservationNumber },
         });
       },
       error: (err) => {
         this.isSubmitting.set(false);
         this.errorMessage.set(
-          err?.error?.message || 'Ошибка при создании профиля гостя'
+          err?.error?.message || 'Ошибка при создании бронирования'
         );
       },
     });
