@@ -11,6 +11,7 @@ import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { MessageService } from 'primeng/api';
 import { MessagesModule } from 'primeng/messages';
+import { HotelDto } from '../../shared/models/hotel.model';
 
 @Component({
   selector: 'app-profile',
@@ -38,23 +39,17 @@ export class ProfileComponent implements OnInit {
   guestName = signal(this.authService.getGuestName());
   bookings = signal<any[]>([]);
   isLoading = signal(true);
+  
+  // Карта для быстрого поиска названия отеля по ID
+  private hotelsMap = signal<Map<number, string>>(new Map());
 
-  // Данные гостя для редактирования
   editMode = signal(false);
   guestForm = signal<any>({
-    lastName: '',
-    firstName: '',
-    middleName: '',
-    birthDate: '',
-    gender: 'MALE',
-    phone: '',
-    email: '',
-    citizenship: 'Россия',
-    documentType: 'PASSPORT',
-    documentNumber: ''
+    lastName: '', firstName: '', middleName: '', birthDate: '',
+    gender: 'MALE', phone: '', email: '', citizenship: 'Россия',
+    documentType: 'PASSPORT', documentNumber: ''
   });
   isSaving = signal(false);
-
   genderOptions = [
     { label: 'Мужской', value: 'MALE' },
     { label: 'Женский', value: 'FEMALE' }
@@ -67,7 +62,16 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    // Загружаем историю бронирований
+    // 1. Загружаем карту отелей (благодаря кэшу это происходит мгновенно)
+    this.api.getHotels().subscribe({
+      next: (hotels) => {
+        const map = new Map<number, string>();
+        hotels.forEach(h => map.set(h.id, h.name));
+        this.hotelsMap.set(map);
+      }
+    });
+
+    // 2. Загружаем историю бронирований
     this.api.getGuestHistory(Number(guestId)).subscribe({
       next: (data) => {
         this.bookings.set(data);
@@ -76,68 +80,47 @@ export class ProfileComponent implements OnInit {
       error: () => this.isLoading.set(false)
     });
 
-    // Загружаем данные гостя из localStorage или API
+    // 3. Загружаем данные гостя
     const cachedData = this.authService.getGuestData();
     if (cachedData) {
       this.guestForm.set({
-        lastName: cachedData.lastName || '',
-        firstName: cachedData.firstName || '',
-        middleName: cachedData.middleName || '',
-        birthDate: cachedData.birthDate || '',
-        gender: cachedData.gender || 'MALE',
-        phone: cachedData.phone || '',
-        email: cachedData.email || '',
-        citizenship: cachedData.citizenship || 'Россия',
-        documentType: cachedData.documentType || 'PASSPORT',
-        documentNumber: cachedData.documentNumber || ''
+        lastName: cachedData.lastName || '', firstName: cachedData.firstName || '',
+        middleName: cachedData.middleName || '', birthDate: cachedData.birthDate || '',
+        gender: cachedData.gender || 'MALE', phone: cachedData.phone || '',
+        email: cachedData.email || '', citizenship: cachedData.citizenship || 'Россия',
+        documentType: cachedData.documentType || 'PASSPORT', documentNumber: cachedData.documentNumber || ''
       });
     } else {
-      // Если в localStorage нет — загружаем с сервера
       this.api.getGuestById(Number(guestId)).subscribe({
         next: (data) => {
           this.authService.setGuestData(data);
           this.guestForm.set({
-            lastName: data.lastName || '',
-            firstName: data.firstName || '',
-            middleName: data.middleName || '',
-            birthDate: data.birthDate || '',
-            gender: data.gender || 'MALE',
-            phone: data.phone || '',
-            email: data.email || '',
-            citizenship: data.citizenship || 'Россия',
-            documentType: data.documentType || 'PASSPORT',
-            documentNumber: data.documentNumber || ''
-          });
-        },
-        error: () => {
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'Внимание',
-            detail: 'Не удалось загрузить данные профиля'
+            lastName: data.lastName || '', firstName: data.firstName || '',
+            middleName: data.middleName || '', birthDate: data.birthDate || '',
+            gender: data.gender || 'MALE', phone: data.phone || '',
+            email: data.email || '', citizenship: data.citizenship || 'Россия',
+            documentType: data.documentType || 'PASSPORT', documentNumber: data.documentNumber || ''
           });
         }
       });
     }
   }
 
-  toggleEditMode(): void {
-    this.editMode.set(!this.editMode());
+  // Метод для получения названия отеля в шаблоне
+  getHotelName(hotelId: number): string {
+    return this.hotelsMap().get(hotelId) || `Отель #${hotelId}`;
   }
+
+  toggleEditMode(): void { this.editMode.set(!this.editMode()); }
 
   saveProfile(): void {
     const guestId = this.authService.getGuestId();
     if (!guestId) return;
-
     const form = this.guestForm();
     if (!form.lastName || !form.firstName || !form.documentNumber || !form.birthDate) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Ошибка',
-        detail: 'Заполните обязательные поля: ФИО, дату рождения и номер документа'
-      });
+      this.messageService.add({ severity: 'warn', summary: 'Ошибка', detail: 'Заполните обязательные поля' });
       return;
     }
-
     this.isSaving.set(true);
     this.api.updateGuest(Number(guestId), form).subscribe({
       next: (updated) => {
@@ -145,36 +128,22 @@ export class ProfileComponent implements OnInit {
         this.guestName.set(`${updated.firstName} ${updated.lastName}`);
         this.isSaving.set(false);
         this.editMode.set(false);
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Успех',
-          detail: 'Данные профиля обновлены'
-        });
+        this.messageService.add({ severity: 'success', summary: 'Успех', detail: 'Данные обновлены' });
       },
       error: (err) => {
         this.isSaving.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Ошибка',
-          detail: err.error?.message || 'Ошибка при сохранении профиля'
-        });
+        this.messageService.add({ severity: 'error', summary: 'Ошибка', detail: err.error?.message });
       }
     });
   }
 
   getStatusSeverity(status: string): 'success' | 'info' | 'warning' | 'danger' | 'secondary' {
-    const map: Record<string, any> = {
-      'CONFIRMED': 'success', 'CHECKED_IN': 'info', 'CREATED': 'warning',
-      'CANCELLED': 'danger', 'CHECKED_OUT': 'secondary'
-    };
+    const map: Record<string, any> = { 'CONFIRMED': 'success', 'CHECKED_IN': 'info', 'CREATED': 'warning', 'CANCELLED': 'danger', 'CHECKED_OUT': 'secondary' };
     return map[status] || 'secondary';
   }
 
   getStatusLabel(status: string): string {
-    const map: Record<string, string> = {
-      'CONFIRMED': 'Подтверждено', 'CHECKED_IN': 'Заселен', 'CREATED': 'Создано',
-      'CANCELLED': 'Отменено', 'CHECKED_OUT': 'Выселен'
-    };
+    const map: Record<string, string> = { 'CONFIRMED': 'Подтверждено', 'CHECKED_IN': 'Заселен', 'CREATED': 'Создано', 'CANCELLED': 'Отменено', 'CHECKED_OUT': 'Выселен' };
     return map[status] || status;
   }
 

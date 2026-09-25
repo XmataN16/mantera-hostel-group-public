@@ -9,106 +9,45 @@
     <div class="section-header">
       <h2>Мои данные</h2>
       <button pButton
-              [label]="editMode() ? 'Отмена' : 'Редактировать'"
-              [icon]="editMode() ? 'pi pi-times' : 'pi pi-pencil'"
-              [severity]="editMode() ? 'secondary' : 'primary'"
-              (click)="toggleEditMode()">
+        [label]="editMode() ? 'Отмена' : 'Редактировать'"
+        [icon]="editMode() ? 'pi pi-times' : 'pi pi-pencil'"
+        [severity]="editMode() ? 'secondary' : 'primary'"
+        (click)="toggleEditMode()">
       </button>
     </div>
-
+    
     @if (editMode()) {
+      <!-- Форма редактирования (без изменений) -->
       <form class="guest-edit-form" (ngSubmit)="saveProfile()">
         <div class="form-row">
-          <div class="field">
-            <label>Фамилия *</label>
-            <input pInputText [(ngModel)]="guestForm().lastName" name="lastName" class="w-full" required>
-          </div>
-          <div class="field">
-            <label>Имя *</label>
-            <input pInputText [(ngModel)]="guestForm().firstName" name="firstName" class="w-full" required>
-          </div>
-          <div class="field">
-            <label>Отчество</label>
-            <input pInputText [(ngModel)]="guestForm().middleName" name="middleName" class="w-full">
-          </div>
+          <div class="field"><label>Фамилия *</label><input pInputText [(ngModel)]="guestForm().lastName" name="lastName" class="w-full" required></div>
+          <div class="field"><label>Имя *</label><input pInputText [(ngModel)]="guestForm().firstName" name="firstName" class="w-full" required></div>
+          <div class="field"><label>Отчество</label><input pInputText [(ngModel)]="guestForm().middleName" name="middleName" class="w-full"></div>
         </div>
         <div class="form-row">
-          <div class="field">
-            <label>Дата рождения *</label>
-            <input type="date" pInputText [(ngModel)]="guestForm().birthDate" name="birthDate" class="w-full" required>
-          </div>
-          <div class="field">
-            <label>Пол</label>
-            <p-dropdown [options]="genderOptions"
-                        [(ngModel)]="guestForm().gender"
-                        name="gender"
-                        optionLabel="label"
-                        optionValue="value"
-                        styleClass="w-full">
-            </p-dropdown>
-          </div>
-          <div class="field">
-            <label>Гражданство</label>
-            <input pInputText [(ngModel)]="guestForm().citizenship" name="citizenship" class="w-full">
-          </div>
+          <div class="field"><label>Дата рождения *</label><input type="date" pInputText [(ngModel)]="guestForm().birthDate" name="birthDate" class="w-full" required></div>
+          <div class="field"><label>Пол</label><p-dropdown [options]="genderOptions" [(ngModel)]="guestForm().gender" name="gender" optionLabel="label" optionValue="value" styleClass="w-full"></p-dropdown></div>
+          <div class="field"><label>Гражданство</label><input pInputText [(ngModel)]="guestForm().citizenship" name="citizenship" class="w-full"></div>
         </div>
         <div class="form-row">
-          <div class="field">
-            <label>Телефон</label>
-            <input pInputText [(ngModel)]="guestForm().phone" name="phone" class="w-full">
-          </div>
-          <div class="field">
-            <label>Email</label>
-            <input type="email" pInputText [(ngModel)]="guestForm().email" name="email" class="w-full">
-          </div>
+          <div class="field"><label>Телефон</label><input pInputText [(ngModel)]="guestForm().phone" name="phone" class="w-full"></div>
+          <div class="field"><label>Email</label><input type="email" pInputText [(ngModel)]="guestForm().email" name="email" class="w-full"></div>
         </div>
         <div class="form-row">
-          <div class="field">
-            <label>Тип документа</label>
-            <p-dropdown [options]="[{label:'Паспорт РФ', value:'PASSPORT'}, {label:'Загранпаспорт', value:'FOREIGN_PASSPORT'}]"
-                        [(ngModel)]="guestForm().documentType"
-                        name="documentType"
-                        optionLabel="label"
-                        optionValue="value"
-                        styleClass="w-full">
-            </p-dropdown>
-          </div>
-          <div class="field">
-            <label>Номер документа *</label>
-            <input pInputText [(ngModel)]="guestForm().documentNumber" name="documentNumber" class="w-full" required>
-          </div>
+          <div class="field"><label>Тип документа</label><p-dropdown [options]="[{label:'Паспорт РФ', value:'PASSPORT'}, {label:'Загранпаспорт', value:'FOREIGN_PASSPORT'}]" [(ngModel)]="guestForm().documentType" name="documentType" optionLabel="label" optionValue="value" styleClass="w-full"></p-dropdown></div>
+          <div class="field"><label>Номер документа *</label><input pInputText [(ngModel)]="guestForm().documentNumber" name="documentNumber" class="w-full" required></div>
         </div>
-        <div class="form-actions">
-          <button pButton type="submit" label="Сохранить" icon="pi pi-check" [loading]="isSaving()"></button>
-        </div>
+        <div class="form-actions"><button pButton type="submit" label="Сохранить" icon="pi pi-check" [loading]="isSaving()"></button></div>
       </form>
     } @else {
       <div class="guest-read-only">
         <div class="info-grid">
-          <div class="info-item">
-            <span class="info-label">ФИО</span>
-            <span class="info-value">{{ guestForm().lastName }} {{ guestForm().firstName }} {{ guestForm().middleName }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Дата рождения</span>
-            <span class="info-value">{{ guestForm().birthDate }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Пол</span>
-            <span class="info-value">{{ guestForm().gender === 'MALE' ? 'Мужской' : 'Женский' }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Телефон</span>
-            <span class="info-value">{{ guestForm().phone || '—' }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Email</span>
-            <span class="info-value">{{ guestForm().email || '—' }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Документ</span>
-            <span class="info-value">{{ guestForm().documentType === 'PASSPORT' ? 'Паспорт РФ' : 'Загранпаспорт' }}: {{ guestForm().documentNumber }}</span>
-          </div>
+          <div class="info-item"><span class="info-label">ФИО</span><span class="info-value">{{ guestForm().lastName }} {{ guestForm().firstName }} {{ guestForm().middleName }}</span></div>
+          <div class="info-item"><span class="info-label">Дата рождения</span><span class="info-value">{{ guestForm().birthDate }}</span></div>
+          <div class="info-item"><span class="info-label">Пол</span><span class="info-value">{{ guestForm().gender === 'MALE' ? 'Мужской' : 'Женский' }}</span></div>
+          <div class="info-item"><span class="info-label">Телефон</span><span class="info-value">{{ guestForm().phone || '—' }}</span></div>
+          <div class="info-item"><span class="info-label">Email</span><span class="info-value">{{ guestForm().email || '—' }}</span></div>
+          <div class="info-item"><span class="info-label">Документ</span><span class="info-value">{{ guestForm().documentType === 'PASSPORT' ? 'Паспорт РФ' : 'Загранпаспорт' }}: {{ guestForm().documentNumber }}</span></div>
         </div>
       </div>
     }
@@ -126,7 +65,7 @@
         <ng-template pTemplate="header">
           <tr>
             <th>№ Бронирования</th>
-            <th>Отель (ID)</th>
+            <th>Отель</th> <!-- Изменено с "Отель (ID)" -->
             <th>Даты</th>
             <th>Статус</th>
             <th>Сумма</th>
@@ -135,11 +74,10 @@
         <ng-template pTemplate="body" let-booking>
           <tr>
             <td><strong>{{ booking.reservationNumber }}</strong></td>
-            <td>{{ booking.hotelId }}</td>
+            <!-- ИСПОЛЬЗУЕМ НОВЫЙ МЕТОД -->
+            <td>{{ getHotelName(booking.hotelId) }}</td> 
             <td>{{ booking.checkInDate }} — {{ booking.checkOutDate }}</td>
-            <td>
-              <p-tag [value]="getStatusLabel(booking.status)" [severity]="getStatusSeverity(booking.status)"></p-tag>
-            </td>
+            <td><p-tag [value]="getStatusLabel(booking.status)" [severity]="getStatusSeverity(booking.status)"></p-tag></td>
             <td>{{ booking.totalAmount | currency:'RUB':'symbol':'1.0-0' }}</td>
           </tr>
         </ng-template>

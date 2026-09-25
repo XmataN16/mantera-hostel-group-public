@@ -1,9 +1,10 @@
 .search-page {
-  max-width: 1100px;
+  max-width: 1200px; // Чуть расширил для новых фильтров
   margin: 0 auto;
   padding: 2rem 1.5rem;
   h1 { font-size: 1.6rem; color: #1a2332; margin: 0 0 1.5rem; }
 }
+
 .filters-card {
   background: #fff;
   border-radius: 14px;
@@ -11,18 +12,31 @@
   box-shadow: 0 2px 12px rgba(0,0,0,0.07);
   margin-bottom: 2rem;
 }
+
 .filters-form {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 0.5fr 0.5fr auto;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1rem;
   align-items: end;
 }
+
 .field {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
   label { font-weight: 600; font-size: 0.85rem; color: #546e7a; }
 }
+
+.field-sm {
+  max-width: 120px; // Ограничиваем ширину для чисел и гостей
+}
+
+.field-btn {
+  display: flex;
+  align-items: flex-end;
+  min-width: 140px;
+}
+
 .results-header {
   display: flex;
   justify-content: space-between;
@@ -38,11 +52,13 @@
     color: #1565c0;
   }
 }
+
 .rooms-list {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
+
 .room-card {
   background: #fff;
   border-radius: 14px;
@@ -53,9 +69,11 @@
   align-items: center;
   gap: 1.5rem;
 }
+
 .room-info {
   h3 { margin: 0 0 0.5rem; font-size: 1.15rem; color: #1a2332; }
 }
+
 .room-meta {
   display: flex;
   gap: 1rem;
@@ -63,6 +81,7 @@
   font-size: 0.9rem;
   color: #607d8b;
 }
+
 .room-price-block {
   text-align: right;
   display: flex;
@@ -73,15 +92,27 @@
   .per-night { font-size: 0.8rem; color: #90a4ae; }
   .total { font-size: 0.9rem; color: #546e7a; font-weight: 600; margin-bottom: 0.5rem; }
 }
+
 .status-msg, .empty {
   text-align: center;
   padding: 2rem;
   color: #78909c;
   font-size: 1.05rem;
 }
-@media (max-width: 800px) {
-  .filters-form { grid-template-columns: 1fr 1fr; }
-  .field-btn { grid-column: 1 / -1; }
+
+// Адаптив
+@media (max-width: 900px) {
+  .filters-form { 
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+  }
+  .field-btn {
+    grid-column: 1 / -1; // Кнопка на всю ширину
+    button { width: 100%; }
+  }
+}
+
+@media (max-width: 600px) {
   .room-card { flex-direction: column; align-items: stretch; }
   .room-price-block { align-items: flex-start; text-align: left; }
+  .field-sm { max-width: 100%; } // На мобилках убираем ограничения ширины
 }

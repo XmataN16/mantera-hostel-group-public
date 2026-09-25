@@ -1,19 +1,12 @@
 <section class="search-page">
   <h1>Поиск доступных номеров</h1>
-
+  
   <!-- Фильтры -->
   <div class="filters-card">
     <form class="filters-form" (ngSubmit)="search()">
       <div class="field">
         <label>Отель</label>
-        <p-dropdown
-          [options]="hotels()"
-          [(ngModel)]="hotelId"
-          name="hotel"
-          optionLabel="name"
-          optionValue="id"
-          placeholder="Выберите"
-          styleClass="w-full" />
+        <p-dropdown [options]="hotels()" [(ngModel)]="hotelId" name="hotel" optionLabel="name" optionValue="id" placeholder="Выберите" styleClass="w-full" (onChange)="onHotelChange()" />
       </div>
       <div class="field">
         <label>Заезд</label>
@@ -31,6 +24,21 @@
         <label>Дети</label>
         <p-inputNumber [(ngModel)]="children" name="children" [min]="0" [showButtons]="true" styleClass="w-full" />
       </div>
+      
+      <!-- НОВЫЕ ФИЛЬТРЫ -->
+      <div class="field">
+        <label>Тип номера</label>
+        <p-dropdown [options]="roomTypes()" [(ngModel)]="selectedRoomTypeId" name="roomType" optionLabel="name" optionValue="id" placeholder="Любой" styleClass="w-full" (onChange)="applyFilters()" [showClear]="true" />
+      </div>
+      <div class="field field-sm">
+        <label>Цена от, ₽</label>
+        <p-inputNumber [(ngModel)]="minPrice" name="minPrice" [min]="0" [showButtons]="false" placeholder="0" styleClass="w-full" (onBlur)="applyFilters()" />
+      </div>
+      <div class="field field-sm">
+        <label>Цена до, ₽</label>
+        <p-inputNumber [(ngModel)]="maxPrice" name="maxPrice" [min]="0" [showButtons]="false" placeholder="99999" styleClass="w-full" (onBlur)="applyFilters()" />
+      </div>
+
       <div class="field field-btn">
         <button pButton type="submit" label="Найти" icon="pi pi-search"></button>
       </div>
@@ -47,9 +55,9 @@
         <span class="nights">{{ getNights() }} ноч.</span>
       }
     </div>
-
+    
     @if (rooms().length === 0) {
-      <div class="empty">К сожалению, свободных номеров на выбранные даты нет.</div>
+      <div class="empty">К сожалению, по вашим критериям свободных номеров нет. Попробуйте изменить фильтры.</div>
     } @else {
       <div class="rooms-list">
         @for (room of rooms(); track room.roomId) {
@@ -59,10 +67,7 @@
               <div class="room-meta">
                 <span>👥 до {{ room.capacity }} чел.</span>
                 <span>🏢 этаж {{ room.floor }}</span>
-                <p-tag
-                  [value]="room.housekeepingStatus === 'CLEAN' ? 'Чистый' : room.housekeepingStatus"
-                  [severity]="room.housekeepingStatus === 'CLEAN' ? 'success' : 'warning'"
-                />
+                <p-tag [value]="room.housekeepingStatus === 'CLEAN' ? 'Чистый' : room.housekeepingStatus" [severity]="room.housekeepingStatus === 'CLEAN' ? 'success' : 'warning'" />
               </div>
             </div>
             <div class="room-price-block">
@@ -71,12 +76,7 @@
               @if (getNights() > 0) {
                 <div class="total">Итого: {{ formatPrice(room.basePrice * getNights()) }}</div>
               }
-              <button
-                pButton
-                label="Забронировать"
-                icon="pi pi-check"
-                (click)="bookRoom(room)">
-              </button>
+              <button pButton label="Забронировать" icon="pi pi-check" (click)="bookRoom(room)"></button>
             </div>
           </div>
         }
